@@ -58,8 +58,9 @@ public class Unit : MonoBehaviour, IPointerClickHandler
         if(unitState == UnitState.Stay)
         {
             currentUnitSelect = this;
+            animator.SetTrigger("Focus");
         }
-        animator.SetTrigger("Focus");
+        
     }
 
     public void Moving(bool moving)

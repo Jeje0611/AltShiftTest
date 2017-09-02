@@ -5,7 +5,9 @@ using DG.Tweening;
 
 public class GridManager : Singleton<GridManager>
 {
+#region Static variable
     private static Unit unitMoving;
+#endregion
 
     [SerializeField]
     private float timeBeetweenSlot = 1;
@@ -35,7 +37,11 @@ public class GridManager : Singleton<GridManager>
     [SerializeField]
     private float timeBeetweenCollectibleMin = 5, timeBeetweenCollectibleMax = 10;
 
+    [SerializeField]
+    private float timeBeetweenNewSlotMin = 5, timeBeetweenNewSlotMax = 10;
+
     private float timerNextCollectible;
+    private float timerNextSlot;
     private int slotX;
     private int slotY;
     private Vector3 qVector;
@@ -45,9 +51,13 @@ public class GridManager : Singleton<GridManager>
     {
         slotsInGrid = new List<Slot>();
         timerNextCollectible = Time.time + Random.Range(timeBeetweenCollectibleMin, timeBeetweenCollectibleMax);
+        timerNextSlot = Time.time + Random.Range(timeBeetweenNewSlotMin, timeBeetweenNewSlotMax);
         Load();
     }
 
+    /// <summary>
+    /// Load Map
+    /// </summary>
     void Load()
     {
         slotX = Mathf.RoundToInt(slotPrefab.GetComponentInChildren<RectTransform>().sizeDelta.x);
@@ -67,6 +77,23 @@ public class GridManager : Singleton<GridManager>
 
     }
 
+    /// <summary>
+    /// Create a new slot
+    /// </summary>
+    void NewSlot()
+    {
+        List<Vector2> neighboursNotUse = GetNeighboursEmptySlotByCoordonates(slotsInGrid[Random.Range(0, slotsInGrid.Count - 1)].coordinates);
+        if(neighboursNotUse.Count > 0)
+        {
+            Vector2 coordonate = neighboursNotUse[Random.Range(0, neighboursNotUse.Count)];
+            Slot slot = Instantiate<Slot>(slotPrefab, slotParent);
+            slot.Init(coordonate);
+            slot.transform.localPosition = coordonate.x * qVector + coordonate.y * rVector;
+            slotsInGrid.Add(slot);
+        }
+        
+    }
+
     private void Update()
     {
         if(timerNextCollectible < Time.time)
@@ -74,8 +101,17 @@ public class GridManager : Singleton<GridManager>
             timerNextCollectible = Time.time + Random.Range(timeBeetweenCollectibleMin, timeBeetweenCollectibleMax);
             CreateNewCollectable();
         }
+        if (timerNextSlot < Time.time)
+        {
+            timerNextSlot = Time.time + Random.Range(timeBeetweenNewSlotMin, timeBeetweenNewSlotMax);
+            NewSlot();
+        }
+       
     }
 
+    /// <summary>
+    /// Generate a new collectable
+    /// </summary>
     void CreateNewCollectable()
     {
         Slot slotEmpty = FindSlotWithoutCollectable();
@@ -98,6 +134,7 @@ public class GridManager : Singleton<GridManager>
         if (path.Count == 0)
             return;
         unitMoving = unit;
+        unitMoving.Moving(true);
         Tweener tweener = unit.transform.DOPath(path.ToArray(), path.Count * timeBeetweenSlot, PathType.CatmullRom);
         tweener.onWaypointChange += (int index) =>
         {
@@ -107,6 +144,11 @@ public class GridManager : Singleton<GridManager>
         tweener.onComplete += UnitArrived;
     }
 
+    /// <summary>
+    /// Hightlight a futur path
+    /// </summary>
+    /// <param name="unit"></param>
+    /// <param name="slotTarget"></param>
     public void PathHightlight(Unit unit, Slot slotTarget)
     {
         List<Slot> slotPath = GetSlotPath(slotTarget, unit.linkedSlot);
@@ -132,6 +174,7 @@ public class GridManager : Singleton<GridManager>
     /// </summary>
     private void UnitArrived()
     {
+        unitMoving.Moving(false);
         unitMoving = null;
         foreach (Slot slot in slotsInGrid)
         {
@@ -194,7 +237,6 @@ public class GridManager : Singleton<GridManager>
     private List<Slot> GetNeighboursSlotByCoordonates(Vector2 coordonates)
     {
         List<Slot> slotsFind = new List<Slot>();
-        Debug.Log(coordonates);
         foreach (Vector2 neighbour in Unit.neighbours)
         {
             Slot slot = GetSlotByCoordonates(new Vector2(coordonates.x + neighbour.x, coordonates.y + neighbour.y));
@@ -202,9 +244,24 @@ public class GridManager : Singleton<GridManager>
             if (slot != null)
             {
                 slotsFind.Add(slot);
-                Debug.Log(slot.coordinates);
             }
                 
+        }
+        return slotsFind;
+    }
+
+    private List<Vector2> GetNeighboursEmptySlotByCoordonates(Vector2 coordonates)
+    {
+        List<Vector2> slotsFind = new List<Vector2>();
+        foreach (Vector2 neighbour in Unit.neighbours)
+        {
+            Slot slot = GetSlotByCoordonates(new Vector2(coordonates.x + neighbour.x, coordonates.y + neighbour.y));
+
+            if (slot == null)
+            {
+                slotsFind.Add(new Vector2(coordonates.x + neighbour.x, coordonates.y + neighbour.y));
+            }
+
         }
         return slotsFind;
     }
@@ -212,7 +269,6 @@ public class GridManager : Singleton<GridManager>
     private Slot GetNearestSlot(Vector2 coordonates, Vector2 destination)
     {
         List<Slot> slotAround = GetNeighboursSlotByCoordonates(coordonates);
-        Debug.Log(slotAround.Count);
         Slot nearestSlot = null;
         float smallestDistance = float.MaxValue;
         foreach (Slot slot in slotAround)
@@ -235,6 +291,5 @@ public class GridManager : Singleton<GridManager>
             return slots[Random.Range(0, slots.Count - 1)];
         else
             return null;
-
     }
 }

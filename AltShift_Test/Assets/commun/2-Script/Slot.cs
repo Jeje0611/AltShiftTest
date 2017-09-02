@@ -29,7 +29,11 @@ public class Slot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
         gameObject.name = "Slot : " + coordinates.x + " " + coordinates.y;
     }
 
-
+    public void Init(Vector2 coordonate)
+    {
+        coordinates = coordonate;
+        gameObject.name = "Slot : " + coordinates.x + " " + coordinates.y;
+    }
 
     public void UnitArrived(Unit unit)
     {
