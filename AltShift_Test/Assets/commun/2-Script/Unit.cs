@@ -9,6 +9,9 @@ public class Unit : MonoBehaviour, IPointerClickHandler
 
     public static Unit currentUnitSelect;
 
+    /// <summary>
+    /// Neighbours coordonate for axial coordonate
+    /// </summary>
     public static Vector2[] neighbours = new Vector2[] {
         new Vector2 (+1, 0),
         new Vector2 (+1, -1),
@@ -18,20 +21,14 @@ public class Unit : MonoBehaviour, IPointerClickHandler
         new Vector2 (0, +1)
     };
 
-    public static Vector2[] round = new Vector2[] {
-        new Vector2 (-1, 0),
-        new Vector2 (1, -1),
-        new Vector2 (+1, 0),
-        new Vector2 (0, 1),
-        new Vector2 (-1, 1),
-        new Vector2 (-1, 0)
-    };
-
 #endregion
 
+    /// <summary>
+    /// Unit State
+    /// </summary>
     public enum UnitState
     {
-        Stay,
+        Stay,  
         Move
     }
 
@@ -63,6 +60,7 @@ public class Unit : MonoBehaviour, IPointerClickHandler
         
     }
 
+    // Change Moving State
     public void Moving(bool moving)
     {
         if (moving)

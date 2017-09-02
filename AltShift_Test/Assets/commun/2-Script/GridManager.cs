@@ -206,6 +206,13 @@ public class GridManager : Singleton<GridManager>
         return coordonates;
     }
 
+
+    /// <summary>
+    /// Return Path with list of slot
+    /// </summary>
+    /// <param name="targetSlot"></param>
+    /// <param name="originSlot"></param>
+    /// <returns></returns>
     private List<Slot> GetSlotPath(Slot targetSlot, Slot originSlot)
     {
         List<Slot> slots = new List<Slot>();
@@ -266,6 +273,13 @@ public class GridManager : Singleton<GridManager>
         return slotsFind;
     }
 
+
+    /// <summary>
+    /// Return nearest Slot destination
+    /// </summary>
+    /// <param name="coordonates"></param>
+    /// <param name="destination"></param>
+    /// <returns></returns>
     private Slot GetNearestSlot(Vector2 coordonates, Vector2 destination)
     {
         List<Slot> slotAround = GetNeighboursSlotByCoordonates(coordonates);

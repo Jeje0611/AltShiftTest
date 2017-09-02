@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
+/// <summary>
+/// Scriptable Object with default map information
+/// </summary>
 [CreateAssetMenu()]
 public class GridData : ScriptableObject
 {
