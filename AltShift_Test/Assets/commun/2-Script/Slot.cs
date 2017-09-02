@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class Slot : MonoBehaviour, IPointerClickHandler
+public class Slot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler
 {
 #region Static Variables
 
@@ -23,10 +23,13 @@ public class Slot : MonoBehaviour, IPointerClickHandler
 
     Collectable colectable;
 
-    void Start()
+    public void Init(GridData.SlotData slotData)
     {
-        gameObject.name = "Slot : " + coordinates.x +" "+ coordinates.y;
+        coordinates = new Vector2(slotData.q, slotData.r);
+        gameObject.name = "Slot : " + coordinates.x + " " + coordinates.y;
     }
+
+
 
     public void UnitArrived(Unit unit)
     {
@@ -47,6 +50,10 @@ public class Slot : MonoBehaviour, IPointerClickHandler
 
     }
 
+    public void OnFocus(bool focus)
+    {
+        anim.SetBool("Focus", focus);
+    }
 
     public void OnPointerClick(PointerEventData eventData)
     {
@@ -54,7 +61,16 @@ public class Slot : MonoBehaviour, IPointerClickHandler
         {
             currentHoveredSlot = this;
             GridManager.Instance.GoToSlot(Unit.currentUnitSelect, currentHoveredSlot);
+            Unit.currentUnitSelect = null;
         }
        
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (Unit.currentUnitSelect != null)
+        {
+            GridManager.Instance.PathHightlight(Unit.currentUnitSelect, this);
+        }
     }
 }

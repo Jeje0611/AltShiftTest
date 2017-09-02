@@ -29,6 +29,13 @@ public class Unit : MonoBehaviour, IPointerClickHandler
 
 #endregion
 
+    public enum UnitState
+    {
+        Stay,
+        Move
+    }
+
+
     [SerializeField]
     Animator animator;
 
@@ -38,12 +45,30 @@ public class Unit : MonoBehaviour, IPointerClickHandler
     [SerializeField]
     RectTransform rectTransform;
 
+
+    /// <summary>
+    /// On this Slot
+    /// </summary>
     public Slot linkedSlot;
+
+    private UnitState unitState = UnitState.Stay;
 
     public void OnPointerClick(PointerEventData eventData)
     {  
-        currentUnitSelect = this;
-        Debug.Log(currentUnitSelect.linkedSlot.coordinates);
+        if(unitState == UnitState.Stay)
+        {
+            currentUnitSelect = this;
+        }
+        animator.SetTrigger("Focus");
+    }
+
+    public void Moving(bool moving)
+    {
+        if (moving)
+            unitState = UnitState.Move;
+        else
+            unitState = UnitState.Stay;
+        animator.SetBool("Moving", moving);
     }
 }
 

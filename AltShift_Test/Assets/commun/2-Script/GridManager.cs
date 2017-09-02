@@ -10,6 +10,9 @@ public class GridManager : Singleton<GridManager>
     [SerializeField]
     private float timeBeetweenSlot = 1;
 
+    [SerializeField]
+    GridData gridData;
+
     /// <summary>
     /// All slot in this grid
     /// </summary>
@@ -20,17 +23,48 @@ public class GridManager : Singleton<GridManager>
     [SerializeField]
     Collectable collectablePrefab;
 
+    [SerializeField]
+    Slot slotPrefab;
+
+    [SerializeField]
+    Unit unit;
+
+    [SerializeField]
+    RectTransform slotParent;
 
     [SerializeField]
     private float timeBeetweenCollectibleMin = 5, timeBeetweenCollectibleMax = 10;
 
-    private float timerNextCollectible;  
-
-
+    private float timerNextCollectible;
+    private int slotX;
+    private int slotY;
+    private Vector3 qVector;
+    private Vector3 rVector;
 
     private void Start()
     {
+        slotsInGrid = new List<Slot>();
         timerNextCollectible = Time.time + Random.Range(timeBeetweenCollectibleMin, timeBeetweenCollectibleMax);
+        Load();
+    }
+
+    void Load()
+    {
+        slotX = Mathf.RoundToInt(slotPrefab.GetComponentInChildren<RectTransform>().sizeDelta.x);
+        slotY = Mathf.RoundToInt(slotPrefab.GetComponentInChildren<RectTransform>().sizeDelta.y);
+
+        qVector = new Vector3((float)slotX * -3f / 4, (float)slotY / -2, 0);
+        rVector = new Vector3(0, (float)-slotY, 0);
+        foreach (GridData.SlotData slotData in gridData.allSlots)
+        {
+            Slot slot = Instantiate<Slot>(slotPrefab, slotParent);
+            slot.Init(slotData);
+            slot.transform.localPosition = slotData.q * qVector + slotData.r * rVector;
+            slotsInGrid.Add(slot);
+        }
+        unit.linkedSlot = slotsInGrid[0];
+
+
     }
 
     private void Update()
@@ -73,6 +107,16 @@ public class GridManager : Singleton<GridManager>
         tweener.onComplete += UnitArrived;
     }
 
+    public void PathHightlight(Unit unit, Slot slotTarget)
+    {
+        List<Slot> slotPath = GetSlotPath(slotTarget, unit.linkedSlot);
+        foreach (Slot slot in slotsInGrid)
+        {
+            slot.OnFocus(slotPath.Contains(slot));
+        }
+    }
+
+
     /// <summary>
     /// Arrived on a new Waypoint
     /// </summary>
@@ -89,6 +133,10 @@ public class GridManager : Singleton<GridManager>
     private void UnitArrived()
     {
         unitMoving = null;
+        foreach (Slot slot in slotsInGrid)
+        {
+            slot.OnFocus(false);
+        }
     }
 
     /// <summary>
@@ -113,6 +161,24 @@ public class GridManager : Singleton<GridManager>
             }      
         }
         return coordonates;
+    }
+
+    private List<Slot> GetSlotPath(Slot targetSlot, Slot originSlot)
+    {
+        List<Slot> slots = new List<Slot>();
+        Slot slotNextSlot = originSlot;
+        int i = 0;
+        while (slotNextSlot != targetSlot && i < 50)
+        {
+            i++;
+            Slot slotReturn = GetNearestSlot(slotNextSlot.coordinates, targetSlot.coordinates);
+            if (slotReturn && slotReturn != slotNextSlot)
+            {
+                slots.Add(slotReturn);
+                slotNextSlot = slotReturn;
+            }
+        }
+        return slots;
     }
 
     private Slot GetSlotByCoordonates(Vector2 coordonates)
