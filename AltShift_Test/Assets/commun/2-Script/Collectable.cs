@@ -2,25 +2,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Collectable : MonoBehaviour {
+public class Collectable : MonoBehaviour
+{
 
+    /// <summary>
+    /// Score to Add
+    /// </summary>
     [SerializeField]
     int scoreValue = 100;
 
-
-
+    /// <summary>
+    /// Method called when the collectible taked
+    /// </summary>
     public virtual void TakeIt()
     {
-
+        ScoreManager.Instance.AddScore(scoreValue);
+        DestroyCollectible();
     }
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    public void DestroyCollectible()
+    {
+        Destroy(gameObject);
+    }
 }

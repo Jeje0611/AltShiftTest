@@ -19,12 +19,34 @@ public class Slot : MonoBehaviour, IPointerClickHandler
     Animator anim;
 
     [SerializeField]
+    RectTransform parentCollectable;
+
     Collectable colectable;
 
     void Start()
     {
         gameObject.name = "Slot : " + coordinates.x +" "+ coordinates.y;
     }
+
+    public void UnitArrived(Unit unit)
+    {
+        if (colectable != null)
+            colectable.TakeIt();
+    }
+
+    public bool HaveCollectable()
+    {
+        return colectable != null;
+    }
+
+    public void NewCollectable(Collectable newCollectible)
+    {
+        this.colectable = newCollectible;
+        colectable.transform.SetParent(parentCollectable);
+        colectable.transform.position = parentCollectable.position;
+
+    }
+
 
     public void OnPointerClick(PointerEventData eventData)
     {

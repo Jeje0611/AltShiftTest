@@ -5,14 +5,59 @@ using DG.Tweening;
 
 public class GridManager : Singleton<GridManager>
 {
+    private static Unit unitMoving;
+
     [SerializeField]
     private float timeBeetweenSlot = 1;
 
+    /// <summary>
+    /// All slot in this grid
+    /// </summary>
     [SerializeField]
     List<Slot> slotsInGrid;
 
-    private static Unit unitMoving;
 
+    [SerializeField]
+    Collectable collectablePrefab;
+
+
+    [SerializeField]
+    private float timeBeetweenCollectibleMin = 5, timeBeetweenCollectibleMax = 10;
+
+    private float timerNextCollectible;  
+
+
+
+    private void Start()
+    {
+        timerNextCollectible = Time.time + Random.Range(timeBeetweenCollectibleMin, timeBeetweenCollectibleMax);
+    }
+
+    private void Update()
+    {
+        if(timerNextCollectible < Time.time)
+        {
+            timerNextCollectible = Time.time + Random.Range(timeBeetweenCollectibleMin, timeBeetweenCollectibleMax);
+            CreateNewCollectable();
+        }
+    }
+
+    void CreateNewCollectable()
+    {
+        Slot slotEmpty = FindSlotWithoutCollectable();
+        if(slotEmpty != null)
+        {
+            Collectable collectable = Instantiate<Collectable>(collectablePrefab);
+            slotEmpty.NewCollectable(collectable);
+        }
+    }
+
+
+    /// <summary>
+    /// Move a unit to a destination
+    /// </summary>
+    /// <param name="unit"></param>
+    /// <param name="slotTarget">Destination</param>
     public void GoToSlot(Unit unit, Slot slotTarget)
     {
         List<Vector3> path = GetPath(slotTarget,  unit.linkedSlot);
@@ -28,17 +73,30 @@ public class GridManager : Singleton<GridManager>
         tweener.onComplete += UnitArrived;
     }
 
+    /// <summary>
+    /// Arrived on a new Waypoint
+    /// </summary>
+    /// <param name="slot"></param>
     private void NewWaypoint(Slot slot)
     {
         unitMoving.linkedSlot = slot;
+        slot.UnitArrived(unitMoving);
     }
 
+    /// <summary>
+    /// Unit arrived
+    /// </summary>
     private void UnitArrived()
     {
         unitMoving = null;
     }
 
-
+    /// <summary>
+    /// Generate a path
+    /// </summary>
+    /// <param name="targetSlot"> Destination Point </param>
+    /// <param name="originSlot"> Start point </param>
+    /// <returns></returns>
     private List<Vector3> GetPath(Slot targetSlot, Slot originSlot)
     {
         List<Vector3> coordonates = new List<Vector3>();
@@ -103,4 +161,14 @@ public class GridManager : Singleton<GridManager>
         return nearestSlot;
     }
 
+
+    private Slot FindSlotWithoutCollectable()
+    {
+        var slots = slotsInGrid.FindAll(slot => !slot.HaveCollectable());
+        if (slots.Count > 0)
+            return slots[Random.Range(0, slots.Count - 1)];
+        else
+            return null;
+
+    }
 }

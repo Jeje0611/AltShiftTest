@@ -19,6 +19,7 @@ public class ScoreManager : Singleton<ScoreManager>
 	void Start ()
     {
         score = 0;
+        SetUI();
     }
 	
 
